@@ -1,0 +1,42 @@
+version: "{build}"
+
+environment:
+  global:
+    HAXELIB_ROOT: C:\projects\haxelib
+
+install:
+  # http://help.appveyor.com/discussions/problems/5616-not-able-to-build-due-to-problem-in-chocolateyinstallps1
+  - ps: Set-Service wuauserv -StartupType Manual
+  # Install NEKO Chocolatey thing
+  - cinst neko --version 2.3.0 -y
+  # Install HAXE Chocolatey thing
+  - cinst haxe --version 4.1.5 -y
+  - RefreshEnv
+  # HAXELIB
+  - mkdir "%HAXELIB_ROOT%"
+  - haxelib setup "%HAXELIB_ROOT%"
+  # Install libs
+  - haxelib install lime 7.9.0
+  - haxelib install openfl
+  - haxelib install flixel
+  - haxelib run lime setup flixel
+  - haxelib run lime setup
+  - haxelib install flixel-tools
+  - haxelib install flixel-addons
+  - haxelib install flixel-ui
+  - haxelib install hscript
+  - haxelib install newgrounds
+  - haxelib install flixel-addons
+  - haxelib git faxe https://github.com/uhrobots/faxe
+  - haxelib git polymod https://github.com/larsiusprime/polymod.git
+  - haxelib git discord_rpc https://github.com/Aidan63/linc_discord-rpc
+  - haxelib list
+
+# Build
+build_script:
+  - haxelib run lime build windows
+
+artifacts:
+  - path: export/release/windows/bin
+    name: BetterFunkin Windows
+    type: zip
