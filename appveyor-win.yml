@@ -34,7 +34,6 @@ install:
 
 # Build
 build_script:
-  - echo BUILDING WINDOWS VER
   - haxelib run lime build windows
 
 artifacts:
