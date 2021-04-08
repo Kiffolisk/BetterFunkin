@@ -1026,7 +1026,7 @@ class PlayState extends MusicBeatState
 				else
 					oldNote = null;
 
-				var swagNote:Note = new Note(daStrumTime, daNoteData, oldNote);
+				var swagNote:Note = new Note(daStrumTime + FlxG.save.data.noteoffset, daNoteData, oldNote);
 				swagNote.sustainLength = songNotes[2];
 				swagNote.scrollFactor.set(0, 0);
 
@@ -1039,7 +1039,7 @@ class PlayState extends MusicBeatState
 				{
 					oldNote = unspawnNotes[Std.int(unspawnNotes.length - 1)];
 
-					var sustainNote:Note = new Note(daStrumTime + (Conductor.stepCrochet * susNote) + Conductor.stepCrochet, daNoteData, oldNote, true);
+					var sustainNote:Note = new Note(daStrumTime + (Conductor.stepCrochet * susNote) + Conductor.stepCrochet + FlxG.save.data.noteoffset, daNoteData, oldNote, true);
 					sustainNote.scrollFactor.set();
 					unspawnNotes.push(sustainNote);
 
@@ -1459,7 +1459,7 @@ class PlayState extends MusicBeatState
 		// better streaming of shit
 
 		// RESET = Quick Game Over Screen
-		if (controls.RESET)
+		if (controls.RESET && FlxG.save.data.resetEnabled)
 		{
 			health = 0;
 			trace("RESET = True");
@@ -1710,20 +1710,25 @@ class PlayState extends MusicBeatState
 
 		var daRating:String = "sick";
 
-		if (noteDiff > Conductor.safeZoneOffset * 0.9)
+		if (noteDiff > Conductor.safeZoneOffset * 2)
 		{
 			daRating = 'shit';
 			score = 50;
 		}
-		else if (noteDiff > Conductor.safeZoneOffset * 0.75)
+		else if (noteDiff > Conductor.safeZoneOffset * 1.6)
 		{
 			daRating = 'bad';
 			score = 100;
 		}
-		else if (noteDiff > Conductor.safeZoneOffset * 0.2)
+		else if (noteDiff > Conductor.safeZoneOffset * 1.4)
 		{
 			daRating = 'good';
 			score = 200;
+		}
+		else if (noteDiff > Conductor.safeZoneOffset * 1.1)
+		{
+			daRating = 'sick';
+			score = 350;
 		}
 
 		songScore += score;
@@ -1807,8 +1812,7 @@ class PlayState extends MusicBeatState
 			numScore.velocity.y -= FlxG.random.int(140, 160);
 			numScore.velocity.x = FlxG.random.float(-5, 5);
 
-			if (combo >= 10 || combo == 0)
-				add(numScore);
+			add(numScore);
 
 			FlxTween.tween(numScore, {alpha: 0}, 0.2, {
 				onComplete: function(tween:FlxTween)
@@ -1891,49 +1895,23 @@ class PlayState extends MusicBeatState
 			{
 				var daNote = possibleNotes[0];
 
-				if (perfectMode)
-					noteCheck(true, daNote);
+				/* if (perfectMode)
+					noteCheck(true, daNote); */
 
-				// Jump notes
-				if (possibleNotes.length >= 2)
+				// Input fix???
+				for (coolNote in possibleNotes)
 				{
-					if (possibleNotes[0].strumTime == possibleNotes[1].strumTime)
+					noteCheck(controlArray[coolNote.noteData], coolNote);
+					if (coolNote.wasGoodHit)
 					{
-						for (coolNote in possibleNotes)
-						{
-							if (controlArray[coolNote.noteData])
-								goodNoteHit(coolNote);
-							else
-							{
-								var inIgnoreList:Bool = false;
-								for (shit in 0...ignoreList.length)
-								{
-									if (controlArray[ignoreList[shit]])
-										inIgnoreList = true;
-								}
-								if (!inIgnoreList)
-								{
-									// badNoteCheck();
-								}
-							}
-						}
-					}
-					else if (possibleNotes[0].noteData == possibleNotes[1].noteData)
-					{
-						noteCheck(controlArray[daNote.noteData], daNote);
-					}
-					else
-					{
-						for (coolNote in possibleNotes)
-						{
-							noteCheck(controlArray[coolNote.noteData], coolNote);
-						}
+						coolNote.kill();
+						notes.remove(coolNote, true);
+						coolNote.destroy();
 					}
 				}
-				else // regular notes?
-				{
-					noteCheck(controlArray[daNote.noteData], daNote);
-				}
+
+
+					
 				/* 
 					if (controlArray[daNote.noteData])
 						goodNoteHit(daNote);
@@ -1956,12 +1934,6 @@ class PlayState extends MusicBeatState
 								noteCheck(leftP, daNote);
 					}
 				 */
-				if (daNote.wasGoodHit)
-				{
-					daNote.kill();
-					notes.remove(daNote, true);
-					daNote.destroy();
-				}
 			}
 			else
 			{

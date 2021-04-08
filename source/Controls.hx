@@ -498,10 +498,10 @@ class Controls extends FlxActionSet
 		switch (scheme)
 		{
 			case Solo:
-				inline bindKeys(Control.UP, [W, FlxKey.UP]);
-				inline bindKeys(Control.DOWN, [S, FlxKey.DOWN]);
-				inline bindKeys(Control.LEFT, [A, FlxKey.LEFT]);
-				inline bindKeys(Control.RIGHT, [D, FlxKey.RIGHT]);
+				inline bindKeys(Control.UP, (FlxG.save.data.dfjk ? [J, FlxKey.UP] : [W, FlxKey.UP]));
+				inline bindKeys(Control.DOWN, (FlxG.save.data.dfjk ? [F, FlxKey.DOWN] : [S, FlxKey.DOWN]));
+				inline bindKeys(Control.LEFT, (FlxG.save.data.dfjk ? [D, FlxKey.LEFT] : [A, FlxKey.LEFT]));
+				inline bindKeys(Control.RIGHT, (FlxG.save.data.dfjk ? [K, FlxKey.RIGHT] : [D, FlxKey.RIGHT]));
 				inline bindKeys(Control.ACCEPT, [Z, SPACE, ENTER]);
 				inline bindKeys(Control.BACK, [BACKSPACE, ESCAPE]);
 				inline bindKeys(Control.PAUSE, [P, ENTER, ESCAPE]);
@@ -531,10 +531,10 @@ class Controls extends FlxActionSet
 		switch (scheme)
 		{
 			case Solo:
-				bindKeys(Control.UP, [W, FlxKey.UP]);
-				bindKeys(Control.DOWN, [S, FlxKey.DOWN]);
-				bindKeys(Control.LEFT, [A, FlxKey.LEFT]);
-				bindKeys(Control.RIGHT, [D, FlxKey.RIGHT]);
+				bindKeys(Control.UP, (FlxG.save.data.dfjk ? [D] : [W, FlxKey.UP]));
+				bindKeys(Control.DOWN, (FlxG.save.data.dfjk ? [F] : [S, FlxKey.DOWN]));
+				bindKeys(Control.LEFT, (FlxG.save.data.dfjk ? [J] : [A, FlxKey.LEFT]));
+				bindKeys(Control.RIGHT, (FlxG.save.data.dfjk ? [K] : [D, FlxKey.RIGHT]));
 				bindKeys(Control.ACCEPT, [Z, SPACE, ENTER]);
 				bindKeys(Control.BACK, [BACKSPACE, ESCAPE]);
 				bindKeys(Control.PAUSE, [P, ENTER, ESCAPE]);

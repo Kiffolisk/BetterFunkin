@@ -93,6 +93,7 @@ class TitleState extends MusicBeatState
 			startIntro();
 		});
 		#end
+		controls.setKeyboardScheme(Controls.KeyboardScheme.Solo);
 	}
 
 	var logoBl:FlxSprite;
@@ -274,15 +275,7 @@ class TitleState extends MusicBeatState
 
 				var version:String = "v" + Application.current.meta.get('version');
 
-				if (version.trim() != NGio.GAME_VER_NUMS && !OutdatedSubState.leftState)
-				{
-					trace('OLD VERSION!');
-					FlxG.switchState(new OutdatedSubState());
-				}
-				else
-				{
-					FlxG.switchState(new MainMenuState());
-				}
+				FlxG.switchState(new MainMenuState());
 			});
 			// FlxG.sound.play('assets/music/titleShoot' + TitleState.soundExt, 0.7);
 		}

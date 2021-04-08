@@ -14,103 +14,137 @@ import lime.utils.Assets;
 
 class OptionsMenu extends MusicBeatState
 {
-	var selector:FlxText;
+	var grpMenuShit:FlxTypedGroup<Alphabet>;
+
+	var menuItems:Array<String> = ['Switch to WASD', 'Switch to DFJK', '', 'Enable reset', 'Disable reset', '', 'Exit to menu'];
 	var curSelected:Int = 0;
-
-	var controlsStrings:Array<String> = [];
-
-	private var grpControls:FlxTypedGroup<Alphabet>;
+	var offsetText:FlxText;
 
 	override function create()
 	{
-		var menuBG:FlxSprite = new FlxSprite().loadGraphic('assets/images/menuDesat.png');
-		controlsStrings = CoolUtil.coolTextFile('assets/data/controls.txt');
-		menuBG.color = 0xFFea71fd;
-		menuBG.setGraphicSize(Std.int(menuBG.width * 1.1));
-		menuBG.updateHitbox();
-		menuBG.screenCenter();
-		menuBG.antialiasing = true;
-		add(menuBG);
+		super.create();
 
-		grpControls = new FlxTypedGroup<Alphabet>();
-		add(grpControls);
+		var bg:FlxSprite = new FlxSprite(-80).loadGraphic('assets/images/menuBG.png');
+		bg.scrollFactor.x = 0;
+		bg.scrollFactor.y = 0.18;
+		bg.setGraphicSize(Std.int(bg.width * 1.1));
+		bg.updateHitbox();
+		bg.screenCenter();
+		bg.antialiasing = true;
+		add(bg);
 
-		for (i in 0...controlsStrings.length)
-		{
-			if (controlsStrings[i].indexOf('set') != -1)
-			{
-				var controlLabel:Alphabet = new Alphabet(0, (70 * i) + 30, controlsStrings[i].substring(3) + ': ' + controlsStrings[i + 1], true, false);
-				controlLabel.isMenuItem = true;
-				controlLabel.targetY = i;
-				grpControls.add(controlLabel);
-			}
-			// DONT PUT X IN THE FIRST PARAMETER OF new ALPHABET() !!
+		if (FlxG.save.data.dfjk == null){
+			FlxG.save.data.dfjk = false;
+		}
+		
+		if (FlxG.save.data.resetEnabled == null){
+			FlxG.save.data.resetEnabled = true;
 		}
 
-		super.create();
+		if (FlxG.save.data.noteoffset == null){
+			FlxG.save.data.noteoffset = 0;
+		}
+
+		var bg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+		bg.alpha = 0.6;
+		bg.scrollFactor.set();
+		add(bg);
+
+		grpMenuShit = new FlxTypedGroup<Alphabet>();
+		add(grpMenuShit);
+
+		for (i in 0...menuItems.length)
+		{
+			var songText:Alphabet = new Alphabet(0, (70 * i) + 30, menuItems[i], true, false);
+			songText.isMenuItem = true;
+			songText.targetY = i;
+			grpMenuShit.add(songText);
+		}
+
+		changeSelection();
+
+		cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
+
+		offsetText = new FlxText(5, 20, 0, "note offset", 12);
+		offsetText.scrollFactor.set();
+		offsetText.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		add(offsetText);
 	}
 
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
 
-		if (controls.ACCEPT)
+		var upP = controls.UP_P;
+		var downP = controls.DOWN_P;
+		var accepted = controls.ACCEPT;
+
+		if (upP)
 		{
-			changeBinding();
+			changeSelection(-1);
+		}
+		if (downP)
+		{
+			changeSelection(1);
 		}
 
-		if (isSettingControl)
-			waitingInput();
-		else
+		if (controls.LEFT_P)
 		{
-			if (controls.BACK)
-				FlxG.switchState(new MainMenuState());
-			if (controls.UP_P)
-				changeSelection(-1);
-			if (controls.DOWN_P)
-				changeSelection(1);
+			FlxG.save.data.noteoffset -= 1;
+		}
+		if (controls.RIGHT_P)
+		{
+			FlxG.save.data.noteoffset += 1;
+		}
+
+		offsetText.text = "Note Offset (use left and right to change): " + FlxG.save.data.noteoffset;
+
+		if (accepted)
+		{
+			var daSelected:String = menuItems[curSelected];
+
+			switch (daSelected)
+			{
+				case "Switch to WASD-Arrow keys":
+					FlxG.save.data.dfjk = false;
+					controls.setKeyboardScheme(Controls.KeyboardScheme.Solo);
+					FlxG.switchState(new MainMenuState());
+				case "Switch to DFJK":
+					FlxG.save.data.dfjk = true;
+					controls.setKeyboardScheme(Controls.KeyboardScheme.Solo);
+					FlxG.switchState(new MainMenuState());
+				case "Enable reset":
+					FlxG.save.data.resetEnabled = true;
+					controls.setKeyboardScheme(Controls.KeyboardScheme.Solo);
+					FlxG.switchState(new MainMenuState());
+				case "Disable reset":
+					FlxG.save.data.resetEnabled = false;
+					controls.setKeyboardScheme(Controls.KeyboardScheme.Solo);
+					FlxG.switchState(new MainMenuState());
+				case "Exit to menu":
+					FlxG.switchState(new MainMenuState());
+			}
+		}
+
+		if (FlxG.keys.justPressed.J)
+		{
+			// for reference later!
+			// PlayerSettings.player1.controls.replaceBinding(Control.LEFT, Keys, FlxKey.J, null);
 		}
 	}
 
-	function waitingInput():Void
+	function changeSelection(change:Int = 0):Void
 	{
-		if (FlxG.keys.getIsDown().length > 0)
-		{
-			PlayerSettings.player1.controls.replaceBinding(Control.LEFT, Keys, FlxG.keys.getIsDown()[0].ID, null);
-		}
-		// PlayerSettings.player1.controls.replaceBinding(Control)
-	}
-
-	var isSettingControl:Bool = false;
-
-	function changeBinding():Void
-	{
-		if (!isSettingControl)
-		{
-			isSettingControl = true;
-		}
-	}
-
-	function changeSelection(change:Int = 0)
-	{
-		#if !switch
-		NGio.logEvent('Fresh');
-		#end
-
-		FlxG.sound.play('assets/sounds/scrollMenu' + TitleState.soundExt, 0.4);
-
 		curSelected += change;
 
 		if (curSelected < 0)
-			curSelected = grpControls.length - 1;
-		if (curSelected >= grpControls.length)
+			curSelected = menuItems.length - 1;
+		if (curSelected >= menuItems.length)
 			curSelected = 0;
-
-		// selector.y = (70 * curSelected) + 30;
 
 		var bullShit:Int = 0;
 
-		for (item in grpControls.members)
+		for (item in grpMenuShit.members)
 		{
 			item.targetY = bullShit - curSelected;
 			bullShit++;
