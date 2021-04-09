@@ -64,6 +64,8 @@ class PlayState extends MusicBeatState
 	private var strumLine:FlxSprite;
 	private var curSection:Int = 0;
 
+	private var misses:Int = 0;
+
 	private var camFollow:FlxObject;
 
 	private static var prevCamFollow:FlxObject;
@@ -1268,16 +1270,9 @@ class PlayState extends MusicBeatState
 
 		super.update(elapsed);
 
-		for (i in 0...allNotes.length)
-		{
-			if (allNotes.members[i].y < -FlxG.height)
-			{
-				var noteDataShit:Int = Std.int(Math.abs(allNotes.members[i].noteData));
-				noteMiss(noteDataShit);
-			}
-		}
-
-		scoreTxt.text = "Score:" + songScore;
+		scoreTxt.text = "Misses: " + misses + " | Score: " + songScore;
+		scoreTxt.borderColor = FlxColor.BLACK;
+		scoreTxt.borderSize = 2;
 
 		if (FlxG.keys.justPressed.ENTER && startedCountdown && canPause)
 		{
@@ -1586,7 +1581,9 @@ class PlayState extends MusicBeatState
 					{
 						if (daNote.tooLate || !daNote.wasGoodHit)
 						{
-							health -= 0.02;
+							misses = misses + 1;
+							var noteDataShit:Int = Std.int(Math.abs(daNote.noteData));
+							noteMiss(noteDataShit);
 							vocals.volume = 0;
 						}
 
