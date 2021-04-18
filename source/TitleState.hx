@@ -1,5 +1,6 @@
 package;
 
+import lime.app.Event;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
@@ -66,6 +67,37 @@ class TitleState extends MusicBeatState
 		#end */
 
 		FlxG.save.bind('funkin', 'ninjamuffin99');
+
+		if (FlxG.save.data.totalNotes == null)
+		{
+			FlxG.save.data.totalNotes = 0;
+		}
+
+		if (FlxG.save.data.totalMisses == null)
+		{
+			FlxG.save.data.totalMisses = 0;
+		}
+
+		if (FlxG.save.data.timesPlayed == null)
+		{
+			FlxG.save.data.timesPlayed = 0;
+		}
+
+		if (FlxG.save.data.startedPlaying == null)
+		{
+			FlxG.save.data.startedPlaying = false;
+		}
+
+		if (!FlxG.save.data.startedPlaying)
+		{
+			FlxG.save.data.timesPlayed += 1;
+		}
+
+		var exit = new Event<Int->Void> ();
+		exit.add (function (value:Int):Void { FlxG.save.data.startedPlaying = false; });
+		exit.dispatch (100);
+
+		Application.current.onExit = exit;
 
 		Highscore.load();
 
@@ -334,52 +366,31 @@ class TitleState extends MusicBeatState
 
 		switch (curBeat)
 		{
-			case 1:
-				createCoolText(['ninjamuffin99', 'phantomArcade', 'kawaisprite', 'evilsk8er']);
-			// credTextShit.visible = true;
-			case 3:
-				addMoreText('present');
-			// credTextShit.text += '\npresent...';
-			// credTextShit.addText();
-			case 4:
-				deleteCoolText();
 			// credTextShit.visible = false;
 			// credTextShit.text = 'In association \nwith';
 			// credTextShit.screenCenter();
-			case 5:
-				createCoolText(['In association', 'with']);
-			case 7:
-				addMoreText('newgrounds');
-				ngSpr.visible = true;
-			// credTextShit.text += '\nNewgrounds';
-			case 8:
-				deleteCoolText();
-				ngSpr.visible = false;
 			// credTextShit.visible = false;
 
 			// credTextShit.text = 'Shoutouts Tom Fulp';
 			// credTextShit.screenCenter();
-			case 9:
-				createCoolText([curWacky[0]]);
+			case 1:
+				addMoreText(curWacky[0]);
 			// credTextShit.visible = true;
-			case 11:
+			case 2:
 				addMoreText(curWacky[1]);
 			// credTextShit.text += '\nlmao';
-			case 12:
+			case 5:
 				deleteCoolText();
 			// credTextShit.visible = false;
 			// credTextShit.text = "Friday";
 			// credTextShit.screenCenter();
-			case 13:
-				addMoreText('Friday');
+			case 7:
+				addMoreText('Better');
 			// credTextShit.visible = true;
-			case 14:
-				addMoreText('Night');
-			// credTextShit.text += '\nNight';
-			case 15:
-				addMoreText('Funkin'); // credTextShit.text += '\nFunkin';
+			case 8:
+				addMoreText('Funkin');
 
-			case 16:
+			case 10:
 				skipIntro();
 		}
 	}

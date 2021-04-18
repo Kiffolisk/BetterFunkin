@@ -64,6 +64,9 @@ class PlayState extends MusicBeatState
 	private var strumLine:FlxSprite;
 	private var curSection:Int = 0;
 
+	private var totalPlayed = 0;
+	private var totalNotesHit = 0;
+	private var accuracy:Float = 100.00;
 	private var misses:Int = 0;
 
 	private var camFollow:FlxObject;
@@ -72,6 +75,7 @@ class PlayState extends MusicBeatState
 
 	private var strumLineNotes:FlxTypedGroup<FlxSprite>;
 	private var playerStrums:FlxTypedGroup<FlxSprite>;
+	private var enemyStrums:FlxTypedGroup<FlxSprite>;
 
 	private var camZooming:Bool = false;
 	private var curSong:String = "";
@@ -637,6 +641,7 @@ class PlayState extends MusicBeatState
 		add(strumLineNotes);
 
 		playerStrums = new FlxTypedGroup<FlxSprite>();
+		enemyStrums = new FlxTypedGroup<FlxSprite>();
 
 		// startCountdown();
 
@@ -847,6 +852,11 @@ class PlayState extends MusicBeatState
 
 	var startTimer:FlxTimer;
 	var perfectMode:Bool = false;
+
+	function accuracyUpdater()
+	{
+		// no
+	}
 
 	function startCountdown():Void
 	{
@@ -1176,6 +1186,10 @@ class PlayState extends MusicBeatState
 			{
 				playerStrums.add(babyArrow);
 			}
+			else
+			{
+				enemyStrums.add(babyArrow);
+			}
 
 			babyArrow.animation.play('static');
 			babyArrow.x += 50;
@@ -1238,6 +1252,14 @@ class PlayState extends MusicBeatState
 	var startedCountdown:Bool = false;
 	var canPause:Bool = true;
 
+	function truncateFloat( number : Float, precision : Int): Float 
+	{
+		var num = number;
+		num = num * Math.pow(10, precision);
+		num = Math.round( num ) / Math.pow(10, precision);
+		return num;
+	}
+
 	override public function update(elapsed:Float)
 	{
 		#if !debug
@@ -1270,7 +1292,11 @@ class PlayState extends MusicBeatState
 
 		super.update(elapsed);
 
-		scoreTxt.text = "Misses: " + misses + " | Score: " + songScore;
+		if (accuracy > 100){
+			accuracy = 100;
+		}
+
+		scoreTxt.text = "Accuracy: " + truncateFloat(accuracy, 2) + "% | Misses: " + misses + " | Score: " + songScore;
 		scoreTxt.borderColor = FlxColor.BLACK;
 		scoreTxt.borderSize = 2;
 
@@ -1517,7 +1543,7 @@ class PlayState extends MusicBeatState
 					daNote.active = true;
 				}
 
-				daNote.y = (strumLine.y - (Conductor.songPosition - daNote.strumTime) * (0.45 * FlxMath.roundDecimal(SONG.speed, 2)));
+				daNote.y = (strumLine.y - (Conductor.songPosition - daNote.strumTime) * (0.45 * FlxMath.roundDecimal(SONG.speed + FlxG.save.data.noteSpeedShit, 2)));
 
 				// i am so fucking sorry for this if condition
 				if (daNote.isSustainNote
@@ -1547,6 +1573,7 @@ class PlayState extends MusicBeatState
 					switch (Math.abs(daNote.noteData))
 					{
 						case 0:
+							
 							dad.playAnim('singLEFT' + altAnim, true);
 						case 1:
 							dad.playAnim('singDOWN' + altAnim, true);
@@ -1557,6 +1584,20 @@ class PlayState extends MusicBeatState
 					}
 
 					dad.holdTimer = 0;
+
+					/* enemyStrums.forEach(function(spr:FlxSprite)
+					{
+						if (Math.abs(daNote.noteData) == spr.ID)
+						{
+							if (!spr.animation.curAnim.name.startsWith("confirm")){
+								spr.animation.play('confirm', true);
+							}
+
+							new FlxTimer().start(0.09, function(tmr:FlxTimer) {
+								spr.animation.play('static', true);
+							});
+						}
+					}); */
 
 					if (SONG.needsVoices)
 						vocals.volume = 1;
@@ -1581,9 +1622,12 @@ class PlayState extends MusicBeatState
 					{
 						if (daNote.tooLate || !daNote.wasGoodHit)
 						{
-							misses = misses + 1;
 							var noteDataShit:Int = Std.int(Math.abs(daNote.noteData));
 							noteMiss(noteDataShit);
+							if (!daNote.isSustainNote){
+								misses = misses + 1;
+								FlxG.save.data.totalMisses = misses;
+							}
 							vocals.volume = 0;
 						}
 
@@ -1710,21 +1754,25 @@ class PlayState extends MusicBeatState
 		if (noteDiff > Conductor.safeZoneOffset * 2)
 		{
 			daRating = 'shit';
+			accuracy -= 0.1;
 			score = 50;
 		}
 		else if (noteDiff > Conductor.safeZoneOffset * 1.6)
 		{
 			daRating = 'bad';
+			accuracy += 0.1;
 			score = 100;
 		}
 		else if (noteDiff > Conductor.safeZoneOffset * 1.4)
 		{
 			daRating = 'good';
+			accuracy += 0.5;
 			score = 200;
 		}
 		else if (noteDiff > Conductor.safeZoneOffset * 1.1)
 		{
 			daRating = 'sick';
+			accuracy += 1;
 			score = 350;
 		}
 
@@ -1938,7 +1986,7 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		if ((up || right || down || left) && !boyfriend.stunned && generatedMusic)
+		if ((up || right || down || left) && generatedMusic)
 		{
 			notes.forEachAlive(function(daNote:Note)
 			{
@@ -2014,6 +2062,7 @@ class PlayState extends MusicBeatState
 		if (!boyfriend.stunned)
 		{
 			health -= 0.005;
+			accuracy -= 5.1;
 			if (combo > 5)
 			{
 				gf.playAnim('sad');
@@ -2045,6 +2094,8 @@ class PlayState extends MusicBeatState
 				case 3:
 					boyfriend.playAnim('singRIGHTmiss', true);
 			}
+
+			accuracyUpdater();
 		}
 	}
 
@@ -2081,8 +2132,10 @@ class PlayState extends MusicBeatState
 	{
 		if (!note.wasGoodHit)
 		{
+			accuracy += 0.1;
 			if (!note.isSustainNote)
 			{
+				FlxG.save.data.totalNotes += 1;
 				popUpScore(note.strumTime);
 				combo += 1;
 			}

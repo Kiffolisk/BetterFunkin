@@ -43,6 +43,8 @@ class MainMenuState extends MusicBeatState
 
 		persistentUpdate = persistentDraw = true;
 
+		FlxG.save.data.startedPlaying = true;
+
 		var bg:FlxSprite = new FlxSprite(-80).loadGraphic('assets/images/menuBG.png');
 		bg.scrollFactor.x = 0;
 		bg.scrollFactor.y = 0.18;
@@ -92,6 +94,13 @@ class MainMenuState extends MusicBeatState
 		versionShit.scrollFactor.set();
 		versionShit.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(versionShit);
+
+		/* var betterfunkin:FlxSprite = new FlxSprite().loadGraphic('assets/images/betterfunkin.png');
+		betterfunkin.scrollFactor.set();
+		betterfunkin.scale.set(0.5, 0.5);
+		betterfunkin.setPosition(-50,-50);
+		betterfunkin.antialiasing = true;
+		add(betterfunkin); */
 
 		// NG.core.calls.event.logEvent('swag').send();
 

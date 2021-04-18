@@ -1,5 +1,6 @@
 package;
 
+
 import Controls.Control;
 import flash.text.TextField;
 import flixel.FlxG;
@@ -16,7 +17,7 @@ class OptionsMenu extends MusicBeatState
 {
 	var grpMenuShit:FlxTypedGroup<Alphabet>;
 
-	var menuItems:Array<String> = ['Switch to WASD', 'Switch to DFJK', '', 'Enable reset', 'Disable reset', '', 'Exit to menu'];
+	var menuItems:Array<String> = ['Switch to WASD', 'Switch to DFJK', '', 'Enable reset', 'Disable reset', '', 'Decrease Note Speed', 'Increase Note Speed', '', 'Go to stats', 'Exit to menu'];
 	var curSelected:Int = 0;
 	var offsetText:FlxText;
 
@@ -97,7 +98,7 @@ class OptionsMenu extends MusicBeatState
 			FlxG.save.data.noteoffset += 1;
 		}
 
-		offsetText.text = "Note Offset (use left and right to change): " + FlxG.save.data.noteoffset;
+		offsetText.text = "Note Offset (use left and right to change): " + FlxG.save.data.noteoffset + "\nNote Speed: " + FlxG.save.data.noteSpeedShit;
 
 		if (accepted)
 		{
@@ -121,6 +122,12 @@ class OptionsMenu extends MusicBeatState
 					FlxG.save.data.resetEnabled = false;
 					controls.setKeyboardScheme(Controls.KeyboardScheme.Solo);
 					FlxG.switchState(new MainMenuState());
+				case "Decrease Note Speed":
+					FlxG.save.data.noteSpeedShit -= 0.1;
+				case "Increase Note Speed":
+					FlxG.save.data.noteSpeedShit += 0.1;
+				case "Go to stats":
+					FlxG.switchState(new StatsMenu());
 				case "Exit to menu":
 					FlxG.switchState(new MainMenuState());
 			}
